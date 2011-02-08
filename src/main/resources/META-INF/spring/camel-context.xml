@@ -1,32 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!-- Configures the MCS using camel as a routing engine -->
-<beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camel="http://camel.apache.org/schema/spring"
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:camel="http://camel.apache.org/schema/spring"
 	xsi:schemaLocation="
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+
+	<!--Config property variables -->
+	<bean id="properties" class="org.apache.camel.component.properties.PropertiesComponent">
+		<property name="location" value="classpath:config/configuration.properties" />
+	</bean>
 
 	<!--Set up the active mq broker bean -->
 	<bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
 		<property name="brokerURL" value="tcp://127.0.0.1:61616" />
 	</bean>
 
+	<bean id="xWingXtceModelFactory" class="org.hbird.transport.xtce.XtceModelFactory">
+		<constructor-arg value="src/data/simpleX-Wing.xml"></constructor-arg>
+	</bean>
+
+	<bean id="packetBroker" class="org.hbird.transport.packetbroker.HummingbirdCamelPacketBroker">
+		<constructor-arg ref="xWingXtceModelFactory"></constructor-arg>
+	</bean>
+
 	<camel:camelContext xmlns="http://camel.apache.org/schema/spring">
-		<!-- Camel will search this package and instantiate any routes defined 
-			in there -->
+		<!-- Camel will search this package and instantiate any routes defined in there -->
 		<camel:package>org.hbird.mcs.basicsetup</camel:package>
 
-
+		<!-- Stream the TM string in the file and send it to the console and an activemq queue -->
 		<camel:route>
-			<camel:from
-				uri="stream:file?fileName=src/data/FlightTmPacket.txt&amp;scanStream=true&amp;scanStreamDelay=1000" />
+			<camel:from uri="stream:file?fileName={{tmpacket.file}}&amp;scanStream=true&amp;scanStreamDelay=1000" />
 			<camel:multicast>
 				<!-- Print out to console for debugging -->
 				<camel:to uri="stream:out" />
 				<!-- Send to packet jms queue using active mq -->
 				<camel:to uri="activemq:packetsOut" />
 			</camel:multicast>
+		</camel:route>
+
+		<camel:route>
+			<!-- Grab the packets from the message queue -->
+			<camel:from uri="activemq:packetsOut" />
+			<!-- convert the Strings to bitsets for the packet broker -->
+			<camel:convertBodyTo type="java.util.BitSet" />
+			<!-- split and output -->
+			<camel:split>
+				<camel:method bean="packetBroker"></camel:method>
+				<camel:multicast>
+					<camel:to uri="activemq:processedPacketsOut?jmsMessageType=Text" />
+				</camel:multicast>
+			</camel:split>
 		</camel:route>
 
 	</camel:camelContext>

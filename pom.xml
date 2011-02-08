@@ -19,8 +19,7 @@
 	<packaging>jar</packaging>
 	<version>0.0.1-SNAPSHOT</version>
 
-	<name>A Camel Route</name>
-	<url>http://www.myorganization.org</url>
+	<name>Basic Hummingbird assembly</name>
 
 	<properties>
 		<camel-version>2.6.0</camel-version>
@@ -79,6 +78,17 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>org.springframework.beans</artifactId>
 			<version>3.0.5.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hbird.transport</groupId>
+			<artifactId>packet-broker</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.hbird.transport</groupId>
+			<artifactId>xtce</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 

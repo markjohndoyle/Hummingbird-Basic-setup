@@ -40,6 +40,11 @@
 				<camel:to uri="activemq:packetsOut" />
 			</camel:multicast>
 		</camel:route>
+		
+		<camel:route>
+			<camel:from uri="imaps://hbirdmcs@googlemail.com:993?password=hbird115" />
+			<camel:to uri="activemq:packetsOut" />
+		</camel:route>
 
 		<camel:route>
 			<!-- Grab the packets from the message queue -->

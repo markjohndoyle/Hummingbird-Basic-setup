@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!-- Configures the MCS using camel as a routing engine -->
-<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:camel="http://camel.apache.org/schema/spring"
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camel="http://camel.apache.org/schema/spring"
 	xsi:schemaLocation="
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
 
 
 	<!--Config property variables -->
-	<bean id="properties" class="org.apache.camel.component.properties.PropertiesComponent">
+	<bean id="properties"
+		class="org.apache.camel.component.properties.PropertiesComponent">
 		<property name="location" value="classpath:config/configuration.properties" />
 	</bean>
 
@@ -22,17 +23,21 @@
 		<constructor-arg value="src/data/simpleX-Wing.xml"></constructor-arg>
 	</bean>
 
-	<bean id="packetBroker" class="org.hbird.transport.packetbroker.HummingbirdCamelPacketBroker">
+	<bean id="packetBroker"
+		class="org.hbird.transport.packetbroker.HummingbirdCamelPacketBroker">
 		<constructor-arg ref="xWingXtceModelFactory"></constructor-arg>
 	</bean>
 
 	<camel:camelContext xmlns="http://camel.apache.org/schema/spring">
-		<!-- Camel will search this package and instantiate any routes defined in there -->
+		<!-- Camel will search this package and instantiate any routes defined 
+			in there -->
 		<camel:package>org.hbird.mcs.basicsetup</camel:package>
 
-		<!-- Stream the TM string in the file and send it to the console and an activemq queue -->
+		<!-- Stream the TM string in the file and send it to the console and an 
+			activemq queue -->
 		<camel:route>
-			<camel:from uri="stream:file?fileName={{tmpacket.file}}&amp;scanStream=true&amp;scanStreamDelay=1000" />
+			<camel:from
+				uri="stream:file?fileName={{tmpacket.file}}&amp;scanStream=true&amp;scanStreamDelay=1000" />
 			<camel:multicast>
 				<!-- Print out to console for debugging -->
 				<camel:to uri="stream:out" />
@@ -49,9 +54,17 @@
 			<!-- split and output -->
 			<camel:split>
 				<camel:method bean="packetBroker"></camel:method>
-				<camel:multicast>
-					<camel:to uri="activemq:processedPacketsOut?jmsMessageType=Text" />
-				</camel:multicast>
+				<camel:choice>
+					<camel:when>
+						<camel:simple>${header.Type} == TMPacket</camel:simple>
+						<camel:to uri="activemq:processedPacketsOut?jmsMessageType=Text"></camel:to>
+					</camel:when>
+					<camel:when>
+						<camel:ognl>request.headers.Type = 'TMParameter'</camel:ognl>
+<!--						<camel:simple>${header.Type} == TMParameter</camel:simple>-->
+						<camel:to uri="activemq:processedParametersOut?jmsMessageType=Text"></camel:to>
+					</camel:when>
+				</camel:choice>
 			</camel:split>
 		</camel:route>
 

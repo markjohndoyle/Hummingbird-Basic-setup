@@ -37,18 +37,20 @@
 			activemq queue -->
 		<camel:route>
 			<camel:from
-				uri="stream:file?fileName={{tmpacket.file}}&amp;scanStream=true&amp;scanStreamDelay=1000" />
+				uri="stream:file?fileName={{tmpacket.file}}&amp;scanStream={{scan.stream}}&amp;scanStreamDelay={{stream.delay}}" />
 			<camel:multicast>
 				<!-- Print out to console for debugging -->
-				<camel:to uri="stream:out" />
+<!--				<camel:to uri="stream:out" />-->
 				<!-- Send to packet jms queue using active mq -->
 				<camel:to uri="activemq:packetsOut" />
 			</camel:multicast>
 		</camel:route>
-		
+
+		<!-- Listen to the hummingbird mcs mail account for telemetry -->
 		<camel:route>
-			<camel:from uri="imaps://hbirdmcs@googlemail.com:993?password=hbird115" />
-			<camel:to uri="activemq:packetsOut" />
+			<camel:from
+				uri="imaps://imap.gmail.com:993?username=hbirdmcs@googlemail.com&amp;password=hbird115" />
+			<camel:to uri="activemq:packetsOut?jmsMessageType=Text" />
 		</camel:route>
 
 		<camel:route>
@@ -58,7 +60,7 @@
 			<camel:convertBodyTo type="java.util.BitSet" />
 			<!-- split and output -->
 			<camel:split>
-				<camel:method bean="packetBroker"></camel:method>
+				<camel:method bean="packetBroker" method="split"></camel:method>
 				<camel:choice>
 					<camel:when>
 						<camel:simple>${header.Type} == TMPacket</camel:simple>
@@ -66,7 +68,6 @@
 					</camel:when>
 					<camel:when>
 						<camel:ognl>request.headers.Type = 'TMParameter'</camel:ognl>
-<!--						<camel:simple>${header.Type} == TMParameter</camel:simple>-->
 						<camel:to uri="activemq:processedParametersOut?jmsMessageType=Text"></camel:to>
 					</camel:when>
 				</camel:choice>

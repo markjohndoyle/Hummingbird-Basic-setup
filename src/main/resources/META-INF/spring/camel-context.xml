@@ -16,11 +16,11 @@
 
 	<!--Set up the active mq broker bean -->
 	<bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
-		<property name="brokerURL" value="tcp://127.0.0.1:61616" />
+		<property name="brokerURL" value="{{activemq.broker.url}}" />
 	</bean>
 
 	<bean id="xWingXtceModelFactory" class="org.hbird.transport.xtce.XtceModelFactory">
-		<constructor-arg value="src/data/simpleX-Wing.xml"></constructor-arg>
+		<constructor-arg value="{{ssm.xtce.file}}"></constructor-arg>
 	</bean>
 
 	<bean id="packetBroker"
@@ -47,11 +47,11 @@
 		</camel:route>
 
 		<!-- Listen to the hummingbird mcs mail account for telemetry -->
-		<camel:route>
-			<camel:from
-				uri="imaps://imap.gmail.com:993?username=hbirdmcs@googlemail.com&amp;password=hbird115" />
-			<camel:to uri="activemq:packetsOut?jmsMessageType=Text" />
-		</camel:route>
+<!--		<camel:route>-->
+<!--			<camel:from-->
+<!--				uri="imaps://imap.gmail.com:993?username=hbirdmcs@googlemail.com&amp;password=hbird115" />-->
+<!--			<camel:to uri="activemq:packetsOut?jmsMessageType=Text" />-->
+<!--		</camel:route>-->
 
 		<camel:route>
 			<!-- Grab the packets from the message queue -->

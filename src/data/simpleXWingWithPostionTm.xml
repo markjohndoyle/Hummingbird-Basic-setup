@@ -1,18 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SpaceSystem xmlns="http://www.omg.org/space/xtce" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.omg.org/space/xtce SpaceSystemV1.0.xsd" name="TrivSat">
+<SpaceSystem xmlns="http://www.omg.org/space/xtce" 
+			 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			 xmlns:xtce="http://www.omg.org/space/xtce"
+			 xsi:schemaLocation="http://www.omg.org/space/xtce SpaceSystemV1.0.xsd" name="TrivSat">
 
 	<TelemetryMetaData>
 		<ParameterTypeSet>
-			<IntegerParameterType name="11bitInteger" sizeInBits="11" signed="false">
+			<IntegerParameterType name="11bitUInteger" sizeInBits="11" signed="false">
 				<UnitSet />
 			</IntegerParameterType>
 
-			<IntegerParameterType name="16bitInteger" sizeInBits="16" signed="false">
+			<IntegerParameterType name="16bitUInteger" sizeInBits="16" signed="false">
+				<UnitSet />
+			</IntegerParameterType>
+			
+			<IntegerParameterType name="16bitInteger" sizeInBits="16" signed="true">
 				<UnitSet />
 			</IntegerParameterType>
 
-			<IntegerParameterType name="32bitInteger" sizeInBits="32" signed="false">
+			<IntegerParameterType name="32bitUInteger" sizeInBits="32" signed="false">
 				<UnitSet />
 			</IntegerParameterType>
 
@@ -20,17 +26,19 @@
 				<UnitSet />
 			</FloatParameterType>
 
-			<FloatParameterType name="64bitFloat" sizeInBits="64">
+			<FloatParameterType name="64bitFloat" sizeInBits="64" >
 				<UnitSet />
 			</FloatParameterType>
 		</ParameterTypeSet>
 
 
 		<ParameterSet>
-			<Parameter parameterTypeRef="11bitInteger" name="XWING_APID" />
-			<Parameter parameterTypeRef="16bitInteger" name="PACKET_LENGTH" />
-			<Parameter parameterTypeRef="32bitInteger" name="XWING_FLIGHT_HOURS" />
+			<Parameter parameterTypeRef="11bitUInteger" name="XWING_APID" />
+			<Parameter parameterTypeRef="16bitUInteger" name="PACKET_LENGTH" />
+			<Parameter parameterTypeRef="32bitUInteger" name="XWING_FLIGHT_HOURS" />
 			<Parameter parameterTypeRef="64bitFloat" name="XWING_LASER_TEMP" />
+			<Parameter parameterTypeRef="16bitInteger" name="LONGITUDE"/>
+			<Parameter parameterTypeRef="16bitInteger" name="LATITUDE"/>
 		</ParameterSet>
 
 
@@ -91,6 +99,22 @@
 				<EntryList>
 					<ParameterRefEntry parameterRef="XWING_LASER_TEMP" />
 					<ParameterRefEntry parameterRef="XWING_FLIGHT_HOURS" />
+				</EntryList>
+			</SequenceContainer>
+			
+			<SequenceContainer name="Position"
+				shortDescription="contains all telemetred data parameters for X-Wing position relative to Earth">
+				<BaseContainer containerRef="TMPacketHeader">
+					<RestrictionCriteria>
+						<ComparisonList>
+							<Comparison parameterRef="XWING_APID" value="003" />
+						</ComparisonList>
+					</RestrictionCriteria>
+				</BaseContainer>
+				
+				<EntryList>
+					<ParameterRefEntry parameterRef="LATITUDE" />
+					<ParameterRefEntry parameterRef="LONGITUDE" />
 				</EntryList>
 			</SequenceContainer>
 

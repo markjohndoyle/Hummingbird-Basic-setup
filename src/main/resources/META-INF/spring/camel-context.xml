@@ -65,16 +65,15 @@
 			in there -->
 		<camel:package>org.hbird.mcs.basicsetup</camel:package>
 
-		<!-- Stream the TM string in the file and send it to the console and an 
-			activemq queue -->
-		<camel:route>
+		<!-- Stream the TM string in the file and send it to the console and an activemq queue -->
+		<camel:route autoStartup="{{use.test.file}}">
 			<camel:from
-				uri="stream:file?fileName={{tmpacket.file}}&amp;scanStream={{scan.stream}}&amp;scanStreamDelay={{stream.delay}}" />
+				uri="stream:file?fileName={{tmpacket.file}}&amp;scanStream={{scan.stream}}&amp;scanStreamDelay={{stream.delay}}"/>
 			<camel:multicast>
 				<!-- Print out to console for debugging -->
 				<!-- <camel:to uri="stream:out" /> -->
 				<!-- Send to packet jms queue using active mq -->
-				<camel:to uri="activemq:packetsOut" />
+				<camel:to uri="activemq:rawPackets" />
 			</camel:multicast>
 		</camel:route>
 
@@ -85,9 +84,9 @@
 			<camel:to uri="activemq:packetsOut?jmsMessageType=Text" />
 		</camel:route>
 
-		<camel:route>
+		<camel:route autoStartup="{{use.packet.broker}}">
 			<!-- Grab the packets from the message queue -->
-			<camel:from uri="activemq:packetsOut" />
+			<camel:from uri="activemq:rawPackets" />
 			<!-- convert the Strings to bitsets for the packet broker -->
 			<camel:convertBodyTo type="java.util.BitSet" />
 			<!-- split and output -->
@@ -96,12 +95,13 @@
 				<camel:choice>
 					<camel:when>
 						<camel:simple>${header.Type} == TMPacket</camel:simple>
-						<camel:to uri="activemq:processedPacketsOut?jmsMessageType=Text"></camel:to>
+<!--						<camel:ognl>request.headers.Type = 'TMPacket'</camel:ognl>-->
+						<camel:to uri="activemq:topic:processedPacketsOut?jmsMessageType=Text"></camel:to>
 					</camel:when>
 					<camel:when>
-						<camel:ognl>request.headers.Type = 'TMParameter'</camel:ognl>
-						<camel:to
-							uri="activemq:topic:processedParametersOut?jmsMessageType=Text"></camel:to>
+						<camel:simple>${header.Type} == TMParameter</camel:simple>
+<!--						<camel:ognl>request.headers.Type = 'TMParameter'</camel:ognl>-->
+						<camel:to uri="activemq:topic:processedParametersOut?jmsMessageType=Text"></camel:to>
 					</camel:when>
 				</camel:choice>
 			</camel:split>

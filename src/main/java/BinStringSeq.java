@@ -1,14 +1,14 @@
 public class BinStringSeq {
 
 
-	public static void main(String[] args) {
-		String packetStart = "0000000001100000000001000000000000000000000";
+	public static void main(final String[] args) {
+		final String packetStart = "000000000110000000000100000";
 
-		for (int x = -179; x <= 0; x++) {
-			String bin = Integer.toBinaryString(x);
-			StringBuilder padded = new StringBuilder(16);
+		for (int x = 44; x >= -45; x--) {
+			final String bin = Integer.toBinaryString(x);
+			final StringBuilder padded = new StringBuilder(16);
 			if (bin.length() < 16) {
-				int pad = 16 - bin.length();
+				final int pad = 16 - bin.length();
 
 				for (int i = 0; i < pad; i++) {
 					padded.append("0");

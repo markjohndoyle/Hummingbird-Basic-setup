@@ -26,10 +26,6 @@
 	<!-- </bean> -->
 	<bean id="jmsConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
 		<property name="brokerURL" value="${activemq.broker.url}" />
-		<property name="sendAcksAsync" value="true"></property>
-		<property name="alwaysSessionAsync" value="true"></property>
-		<property name="optimizeAcknowledge" value="true"></property>
-		<property name="optimizedMessageDispatch" value="true"></property>
 		<property name="useAsyncSend" value="true"></property>
 		<property name="alwaysSyncSend" value="true"></property>
 	</bean>
@@ -81,7 +77,7 @@
 		<camel:route autoStartup="{{use.mail.route}}">
 			<camel:from
 				uri="imaps://imap.gmail.com:993?username=hbirdmcs@googlemail.com&amp;password=hbird115" />
-			<camel:to uri="activemq:packetsOut?jmsMessageType=Text" />
+			<camel:to uri="activemq:rawPackets?jmsMessageType=Text" />
 		</camel:route>
 
 		<camel:route autoStartup="{{use.packet.broker}}">

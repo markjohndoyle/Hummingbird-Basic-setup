@@ -81,24 +81,26 @@
 			<camel:to uri="activemq:rawPackets?jmsMessageType=Text" />
 		</camel:route>
 
-		<camel:route autoStartup="{{use.packet.broker}}">
+		<camel:route autoStartup="{{use.packet.broker}}" trace="true">
 			<!-- Grab the packets from the message queue -->
 			<camel:from uri="activemq:rawPackets" />
+			
 			<!-- convert the Strings to bitsets for the packet broker -->
 			<camel:convertBodyTo type="java.util.BitSet" />
 
-			<camel:to uri="packetBroker"></camel:to>
-			<camel:choice>
-				<camel:when>
-					<camel:simple>${header.Type} == TMPacket</camel:simple>
-					<camel:to uri="activemq:topic:processedPacketsOut?jmsMessageType=Text"></camel:to>
-				</camel:when>
-				<camel:when>
-					<camel:simple>${header.Type} == TMParameter</camel:simple>
-					<camel:to
-						uri="activemq:topic:processedParametersOut?jmsMessageType=Text"></camel:to>
-				</camel:when>
-			</camel:choice>
+			<camel:split>
+				<camel:method bean="packetBroker" method="decodeBinaryTelemetry"></camel:method>
+				<camel:choice>
+					<camel:when>
+						<camel:simple>${header.Type} == TMPacket</camel:simple>
+						<camel:to uri="activemq:topic:processedPacketsOut?jmsMessageType=Text"></camel:to>
+					</camel:when>
+					<camel:when>
+						<camel:simple>${header.Type} == TMParameter</camel:simple>
+						<camel:to uri="activemq:topic:processedParametersOut?jmsMessageType=Text"></camel:to>
+					</camel:when>
+				</camel:choice>
+			</camel:split>
 		</camel:route>
 
 	</camel:camelContext>
